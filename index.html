@@ -186,12 +186,55 @@
     .map-pick-hint.show { display: block; }
 
     .results-content {
-      padding: 14px; display: none; opacity: 0;
+      display: none; opacity: 0;
       transition: opacity 0.3s ease 0.1s;
-      max-height: 640px; overflow-y: auto;
+      overflow-y: auto;
     }
-    .sidebar.results-mode .results-content { display: block; opacity: 1; }
+    .sidebar.results-mode .results-content { display: flex; flex-direction: column; opacity: 1; }
     .sidebar.results-mode .route-content   { display: none; }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .results-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+    }
+    .results-cancel-btn {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-family: 'Sora', sans-serif;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .results-cancel-btn:hover {
+      color: var(--text);
+      background: var(--faint);
+      border-color: var(--border2);
+    }
+    .results-cancel-btn svg { width: 13px; height: 13px; }
+
+    .results-list {
+      padding: 10px 14px 14px;
+      overflow-y: auto;
+      flex: 1;
+    }
 
     .route-option {
       background: var(--surface2); border: 1.5px solid var(--border);
@@ -278,13 +321,22 @@
         border-radius: 20px 20px 0 0;
         max-height: 64px;
       }
-      .sidebar.expanded    { max-height: 70vh; }
-      .sidebar.route-mode  { max-height: 60vmax; }
-      .sidebar.results-mode{ max-height: 75vh; }
+      .sidebar.expanded    { max-height: 72vh; }
+      .sidebar.route-mode  { max-height: 58vh; }
+      .sidebar.results-mode{ max-height: 68vh; }
       .sidebar.details-mode{ max-height: 260px; }
 
-      .s-content { max-height: calc(70vh - 64px); }
-      .results-content { max-height: calc(75vh - 64px); }
+      .sidebar::before {
+        content: '';
+        display: block;
+        width: 36px; height: 4px;
+        background: var(--border2);
+        border-radius: 2px;
+        margin: 8px auto 0;
+      }
+
+      .s-content { max-height: calc(72vh - 64px); }
+      .results-list { max-height: calc(68vh - 120px); }
 
       .user-menu-btn {
         top: 12px; right: 12px;
@@ -385,7 +437,20 @@
       </div>
     </div>
 
-    <div class="results-content" id="resultsContent"></div>
+    <div class="results-content" id="resultsContent">
+      <div class="results-header">
+        <span class="results-title">Route Options</span>
+        <button class="results-cancel-btn" onclick="cancelResults()">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          Cancel
+        </button>
+      </div>
+      <div class="results-list" id="resultsListInner"></div>
+    </div>
+
   </div>
 </div>
 
@@ -755,11 +820,11 @@ async function calculateRoutes(start, end) {
 }
 
 function displayRouteOptions(routes) {
-  const rc = document.getElementById('resultsContent');
+  const inner = document.getElementById('resultsListInner');
   if (!routes.length) {
-    rc.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No routes found.<br>Try different locations.</div>';
+    inner.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-size:13px;">No routes found.<br>Try different locations.</div>';
   } else {
-    rc.innerHTML = routes.map((r, i) => `
+    inner.innerHTML = routes.map((r, i) => `
       <div class="route-option" onclick="showRouteOnMap(${i})">
         <div class="route-header">
           <div class="route-time">${r.totalTime} min</div>
@@ -778,6 +843,14 @@ function displayRouteOptions(routes) {
   sidebar.className = 'sidebar results-mode';
   window.calculatedRoutes = routes;
   if (routes.length) showRouteOnMap(0);
+}
+
+function cancelResults() {
+  routeLayers.forEach(l => map.removeLayer(l));
+  routeLayers = [];
+  sidebar.className = 'sidebar route-mode';
+  menuBtn.classList.add('close');
+  directionsBtn.style.display = 'none';
 }
 
 function showRouteOnMap(idx) {

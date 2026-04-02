@@ -16,11 +16,63 @@
     body { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
 
     .topnav { flex-shrink: 0; }
-
     .main-area { display: flex; flex: 1; overflow: hidden; }
 
     #map { flex: 1; }
     .leaflet-control-zoom { display: none !important; }
+
+    .topnav {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      height: 52px;
+      flex-shrink: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      gap: 0;
+    }
+    .topnav-brand {
+      font-size: 15px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--text);
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .topnav-brand span { color: var(--accent); }
+
+    .topnav-links {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .topnav-link {
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 9px;
+      border-radius: 7px;
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--muted);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .topnav-link:hover  { color: var(--text); background: var(--faint); }
+    .topnav-link.active { color: var(--text); background: var(--surface2); }
+
+    .topnav-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      margin-left: 6px;
+    }
+
+    .topnav-back { display: none; }
 
     .panel {
       width: 340px;
@@ -130,6 +182,24 @@
     @media (max-width: 768px) {
       body { overflow: auto; height: auto; min-height: 100vh; }
 
+      .topnav { height: auto; min-height: 52px; padding: 8px 10px; }
+      .topnav-links { display: none; }
+      .topnav-back {
+        display: flex;
+        align-items: center;
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 4px 7px;
+        border-radius: 7px;
+        white-space: nowrap;
+        transition: all 0.2s;
+        margin-right: 4px;
+        flex-shrink: 0;
+      }
+      .topnav-back:hover { color: var(--text); background: var(--faint); }
+      .topnav-right { margin-left: auto; }
+
       .main-area { flex-direction: column; overflow: visible; }
 
       #map {
@@ -181,10 +251,14 @@
 
 <nav class="topnav">
   <a class="topnav-brand" href="../index.html">🚌 KTM <span>Transit</span></a>
+
   <div class="topnav-links">
     <a class="topnav-link active" href="admin.html">Route Mapping</a>
     <a class="topnav-link" href="../index.html">← Back</a>
   </div>
+
+  <a class="topnav-back" href="../index.html">← Map</a>
+
   <div class="topnav-right">
     <span id="navRoleBadge"></span>
     <span id="navUserName" style="font-size:13px;color:var(--muted)"></span>
