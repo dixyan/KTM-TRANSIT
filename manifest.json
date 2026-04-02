@@ -2,8 +2,8 @@
   "name": "KTM Transit – Kathmandu Route Planner",
   "short_name": "KTM Transit",
   "description": "Plan bus routes across Kathmandu Valley using real stop data.",
-  "start_url": "KTM-TRANSIT/index.html",
-  "scope": "/",
+  "start_url": "/KTM-TRANSIT/",
+"scope": "/KTM-TRANSIT/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0f172a",
@@ -59,14 +59,14 @@
       "name": "Plan a Route",
       "short_name": "Directions",
       "description": "Open route planner directly",
-      "url": "/index.html?action=directions",
+      "url": "/KTM-TRANSIT/index.html?action=directions",
       "icons": [{ "src": "assets/icons/icon-96.png", "sizes": "96x96" }]
     },
     {
       "name": "Admin – Map Routes",
       "short_name": "Route Mapping",
       "description": "Open admin route mapping tool",
-      "url": "/pages/admin.html",
+      "url": "/KTM-TRANSIT/pages/admin.html",
       "icons": [{ "src": "assets/icons/icon-96.png", "sizes": "96x96" }]
     }
   ],
