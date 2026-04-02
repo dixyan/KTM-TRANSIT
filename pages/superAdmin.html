@@ -257,13 +257,13 @@ function renderRoutes(routes) {
     <div class="route-card">
       <div class="rc-header">
         <div>
-          <div class="rc-name">${r.name}</div>
+          <div class="rc-name">${escapeHtml(r.name)}</div>
           <div class="rc-meta">
             ${r.stops.length} stops · every ${r.frequency} min<br>
-            By: <strong>${r.submittedBy}</strong> · ${new Date(r.submittedAt).toLocaleDateString()}
+            By: <strong>${escapeHtml(r.submittedBy)}</strong> · ${new Date(r.submittedAt).toLocaleDateString()}
           </div>
         </div>
-        <span class="status-pill ${r.status}">${r.status}</span>
+        <span class="status-pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
       </div>
       <div class="rc-actions">
         <button class="btn btn-secondary btn-sm" onclick="previewOnMap(${r.id})">👁 Preview</button>
@@ -283,20 +283,27 @@ function renderUsers(users) {
   if (!relevant.length) {
     c.innerHTML = '<div class="empty-state">No users yet.</div>'; return;
   }
-  c.innerHTML = relevant.map(u => `
-    <div class="user-card">
-      <div class="user-avatar">${u.role==='admin'?'🔧':u.role==='pending_admin'?'⏳':'👤'}</div>
-      <div class="user-info">
-        <div class="user-name">${u.name || u.username}</div>
-        <div class="user-meta">@${u.username}</div>
-        <div style="margin-top:4px"><span class="role-badge ${u.role==='pending_admin'?'admin':u.role}">${u.role.replace('_',' ')}</span></div>
-      </div>
-      <div class="user-actions">
-        ${u.role==='pending_admin' ? `<button class="btn btn-success btn-sm" onclick="approveAdmin('${u.username}')">Approve</button>` : ''}
-        ${u.role==='admin' ? `<button class="btn btn-danger btn-sm" onclick="revokeAdmin('${u.username}')">Revoke</button>` : ''}
-        ${u.role==='user' ? `<button class="btn btn-amber btn-sm" onclick="promoteAdmin('${u.username}')">Make Admin</button>` : ''}
-      </div>
-    </div>`).join('');
+  c.innerHTML = relevant.map(u => {
+    const safeRole     = escapeHtml(u.role);
+    const safeName     = escapeHtml(u.name || u.username);
+    const safeUsername = escapeHtml(u.username);
+    const avatarIcon   = u.role==='admin' ? '🔧' : u.role==='pending_admin' ? '⏳' : '👤';
+    const badgeRole    = u.role==='pending_admin' ? 'admin' : safeRole;
+    return `
+      <div class="user-card">
+        <div class="user-avatar">${avatarIcon}</div>
+        <div class="user-info">
+          <div class="user-name">${safeName}</div>
+          <div class="user-meta">@${safeUsername}</div>
+          <div style="margin-top:4px"><span class="role-badge ${badgeRole}">${safeRole.replace('_',' ')}</span></div>
+        </div>
+        <div class="user-actions">
+          ${u.role==='pending_admin' ? `<button class="btn btn-success btn-sm" onclick="approveAdmin('${safeUsername}')">Approve</button>` : ''}
+          ${u.role==='admin' ? `<button class="btn btn-danger btn-sm" onclick="revokeAdmin('${safeUsername}')">Revoke</button>` : ''}
+          ${u.role==='user' ? `<button class="btn btn-amber btn-sm" onclick="promoteAdmin('${safeUsername}')">Make Admin</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function previewOnMap(id) {
@@ -325,14 +332,11 @@ async function approveRoute(id) {
   const r   = all.find(x => x.id === id);
   if (!r) return;
 
-  // Move to approved store
   r.status = 'approved';
   r.approvedAt = new Date().toISOString();
   r.approvedBy = session.username;
-  const { id: _id, ...routeData } = r;
-  await dbAdd(db, STORE_ROUTES, routeData);
-
-  // Update pending record status
+  const { id: pendingId, ...routeData } = r;
+  await dbAdd(db, STORE_ROUTES, { ...routeData, pendingId });
   await dbPut(db, STORE_PENDING, { ...r, status: 'approved' });
 
   showToast('Route approved and published ✓', 'success');

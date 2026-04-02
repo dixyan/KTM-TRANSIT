@@ -1,8 +1,8 @@
 const DB_NAME    = 'KathmanduTransitDB';
 const DB_VERSION = 2;
 
-const STORE_ROUTES  = 'busRoutes';   
-const STORE_PENDING = 'pendingRoutes'; 
+const STORE_ROUTES  = 'busRoutes';
+const STORE_PENDING = 'pendingRoutes';
 const STORE_RECENT  = 'recentSearches';
 const STORE_USERS   = 'users';
 
@@ -185,10 +185,18 @@ function requireRole(roles, redirectTo = 'login.html') {
 function isLoggedIn() { return !!getSession(); }
 
 async function seedUsers(db) {
-  const existing = await dbGetAll(db, STORE_USERS);
-  if (existing.length > 0) return;
-  await dbAdd(db, STORE_USERS, { username: 'admin',      password: 'admin123',  role: 'admin',      name: 'Route Admin' });
-  await dbAdd(db, STORE_USERS, { username: 'superadmin', password: 'super123',  role: 'superadmin', name: 'Super Admin' });
+  await dbPut(db, STORE_USERS, { username: 'admin',      password: 'admin123',  role: 'admin',      name: 'Route Admin' });
+  await dbPut(db, STORE_USERS, { username: 'superadmin', password: 'super123',  role: 'superadmin', name: 'Super Admin' });
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function showToast(msg, type = '') {

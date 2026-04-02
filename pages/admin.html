@@ -217,7 +217,6 @@ let stopMarkers  = [];
 let stopLines    = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Auth check
   session = requireRole(['admin', 'superadmin'], 'login.html?next=admin.html');
   if (!session) return;
 
@@ -242,7 +241,6 @@ function onMapClick(e) {
   currentStops.push({ lat, lon });
   updateStopCounter();
 
-  // Marker
   const num = currentStops.length;
   const marker = L.marker([lat, lon], {
     icon: L.divIcon({
@@ -252,7 +250,6 @@ function onMapClick(e) {
   }).addTo(map);
   stopMarkers.push(marker);
 
-  // Line to previous stop
   if (currentStops.length > 1) {
     const prev = currentStops[currentStops.length - 2];
     const line = L.polyline([[prev.lat, prev.lon],[lat, lon]], { color:'#38bdf8', weight:4, opacity:0.8 }).addTo(map);
@@ -305,21 +302,23 @@ function renderMyRoutes(routes) {
     c.innerHTML = '<div class="empty-state">No routes submitted yet.<br>Map stops above and submit for approval.</div>';
     return;
   }
-  c.innerHTML = routes.sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt)).map(r => `
-    <div class="route-item">
-      <div class="route-item-header">
-        <div>
-          <div class="route-item-name">${r.name}</div>
-          <div class="route-item-meta">${r.stops.length} stops · every ${r.frequency} min</div>
-          <div class="route-item-meta">${new Date(r.submittedAt).toLocaleDateString()}</div>
+  c.innerHTML = routes
+    .sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt))
+    .map(r => `
+      <div class="route-item">
+        <div class="route-item-header">
+          <div>
+            <div class="route-item-name">${escapeHtml(r.name)}</div>
+            <div class="route-item-meta">${r.stops.length} stops · every ${r.frequency} min</div>
+            <div class="route-item-meta">${new Date(r.submittedAt).toLocaleDateString()}</div>
+          </div>
+          <span class="status-pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
         </div>
-        <span class="status-pill ${r.status}">${r.status}</span>
-      </div>
-      <div class="route-item-actions">
-        <button class="btn btn-secondary btn-sm" onclick="previewRoute(${r.id})">Preview</button>
-        ${r.status==='pending' ? `<button class="btn btn-danger btn-sm" onclick="withdrawRoute(${r.id})">Withdraw</button>` : ''}
-      </div>
-    </div>`).join('');
+        <div class="route-item-actions">
+          <button class="btn btn-secondary btn-sm" onclick="previewRoute(${r.id})">Preview</button>
+          ${r.status==='pending' ? `<button class="btn btn-danger btn-sm" onclick="withdrawRoute(${r.id})">Withdraw</button>` : ''}
+        </div>
+      </div>`).join('');
 }
 
 function previewRoute(id) {

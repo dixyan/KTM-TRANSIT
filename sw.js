@@ -1,23 +1,24 @@
-const APP_VERSION   = 'v1.0.0';
+const APP_VERSION   = 'v1.0.1';  // bump version to bust old caches
 const SHELL_CACHE   = `ktm-shell-${APP_VERSION}`;
 const TILE_CACHE    = `ktm-tiles-${APP_VERSION}`;
 const API_CACHE     = `ktm-api-${APP_VERSION}`;
 
-const MAX_TILE_ENTRIES = 500;  
+const MAX_TILE_ENTRIES = 500;
 const MAX_API_ENTRIES  = 100;
-const API_CACHE_TTL    = 7 * 24 * 60 * 60 * 1000; 
+const API_CACHE_TTL    = 7 * 24 * 60 * 60 * 1000;
 
 const SHELL_ASSETS = [
-  '/',
-  '/index.html',
-  '/pages/login.html',
-  '/pages/admin.html',
-  '/pages/superadmin.html',
-  '/css/theme.css',
-  '/js/db.js',
-  '/manifest.json',
-  '/assets/icons/icon-192.png',
-  '/assets/icons/icon-512.png',
+  '/KTM-TRANSIT/',
+  '/KTM-TRANSIT/index.html',
+  '/KTM-TRANSIT/pages/login.html',
+  '/KTM-TRANSIT/pages/admin.html',
+  '/KTM-TRANSIT/pages/superadmin.html',
+  '/KTM-TRANSIT/css/theme.css',
+  '/KTM-TRANSIT/js/db.js',
+  '/KTM-TRANSIT/js/pwa.js',
+  '/KTM-TRANSIT/manifest.json',
+  '/KTM-TRANSIT/assets/icons/icon-192.png',
+  '/KTM-TRANSIT/assets/icons/icon-512.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
 ];
@@ -82,7 +83,6 @@ self.addEventListener('fetch', event => {
     event.respondWith(cacheFirst(request, SHELL_CACHE));
     return;
   }
-
 });
 
 
@@ -146,14 +146,13 @@ async function trimCache(cache, maxEntries) {
 function offlineFallback(request) {
   const url = new URL(request.url);
   if (request.headers.get('Accept')?.includes('text/html')) {
-    return caches.match('/index.html');
+    return caches.match('/KTM-TRANSIT/index.html');  // FIX #2 continued
   }
   return new Response(
     JSON.stringify({ error: 'You are offline', url: url.href }),
     { status: 503, headers: { 'Content-Type': 'application/json' } }
   );
 }
-
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') {

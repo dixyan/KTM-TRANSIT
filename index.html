@@ -418,7 +418,7 @@ let endMarker       = null;
 let searchMarker    = null;
 let routeLayers     = [];
 let selectedLocation= null;
-let activeRouteField= null;   
+let activeRouteField= null;
 
 const sidebar      = document.getElementById('sidebar');
 const menuBtn      = document.getElementById('menuBtn');
@@ -444,6 +444,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   map.on('click', onMapClick);
   locateUser(false);
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('action') === 'directions') {
+    toggleDirectionsMode();
+  }
 });
 
 async function onMapClick(e) {
@@ -523,8 +528,8 @@ function displayRecentSearches() {
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
       </div>
       <div class="location-info" onclick="selectRecentSearch(${i})" style="cursor:pointer">
-        <div class="location-title">${loc.name.split(',')[0]}</div>
-        <div class="location-subtitle">${loc.name.split(',').slice(1,3).join(',').trim()}</div>
+        <div class="location-title">${escapeHtml(loc.name.split(',')[0])}</div>
+        <div class="location-subtitle">${escapeHtml(loc.name.split(',').slice(1,3).join(',').trim())}</div>
       </div>
       <button class="del-single" onclick="deleteSingleRecent(${i})" title="Remove">✕</button>
     </div>`).join('');
@@ -622,9 +627,19 @@ document.getElementById('destInput').addEventListener('keypress', async function
   } else showToast('Destination not found', 'error');
 });
 
+function getCurrentPosition() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 });
+  });
+}
+
 async function useCurrentLocation() {
-  if (!navigator.geolocation) { showToast('Geolocation not supported', 'error'); return; }
-  navigator.geolocation.getCurrentPosition(async pos => {
+  try {
+    const pos = await getCurrentPosition();
     startLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
     const address = await reverseGeocode(startLocation.lat, startLocation.lon);
     document.getElementById('startInput').value = address ? address.split(',')[0] : 'Current Location';
@@ -633,17 +648,17 @@ async function useCurrentLocation() {
     document.getElementById('startInput').classList.remove('active-target');
     document.getElementById('startHint').classList.remove('show');
     activeRouteField = null;
-  }, () => showToast('Could not get location', 'error'));
+  } catch {
+    showToast('Could not get location', 'error');
+  }
 }
 
 async function findRoute() {
   const startVal = document.getElementById('startInput').value.trim();
   const destVal  = document.getElementById('destInput').value.trim();
 
-  // Default start = current location if empty
   if (!startVal && !startLocation) {
     await useCurrentLocation();
-    await new Promise(r => setTimeout(r, 800));
   }
 
   if (!destVal) { showToast('Enter a destination', 'error'); return; }
@@ -663,7 +678,13 @@ async function calculateRoutes(start, end) {
     const alightStop = findNearestStop(end,   bus.stops);
     const boardIdx   = bus.stops.indexOf(boardStop);
     const alightIdx  = bus.stops.indexOf(alightStop);
-    if (boardIdx >= alightIdx) continue;
+
+    if (boardIdx === alightIdx) continue;
+
+    const forward   = boardIdx < alightIdx;
+    const routeSlice = forward
+      ? bus.stops.slice(boardIdx, alightIdx + 1)
+      : bus.stops.slice(alightIdx, boardIdx + 1).reverse();
 
     const [walkTo, walkFrom] = await Promise.all([
       getWalkingRoute(start, boardStop),
@@ -681,7 +702,7 @@ async function calculateRoutes(start, end) {
       steps: [
         { type:'walk', duration: Math.round(walkTo.duration),   distance: walkTo.distance,   coords: walkTo.coords,   text: 'Walk to bus stop' },
         { type:'wait', duration: Math.round(waitTime),          text: `Wait for ${bus.name}` },
-        { type:'bus',  duration: Math.round(busTime),           busName: bus.name, boardStop, alightStop, coords: bus.stops.slice(boardIdx, alightIdx+1) },
+        { type:'bus',  duration: Math.round(busTime),           busName: bus.name, boardStop, alightStop, coords: routeSlice },
         { type:'walk', duration: Math.round(walkFrom.duration), distance: walkFrom.distance, coords: walkFrom.coords, text: 'Walk to destination' }
       ]
     });
@@ -702,9 +723,9 @@ function displayRouteOptions(routes) {
         </div>
         <div class="route-steps">
           ${r.steps.map(s => {
-            if (s.type==='walk') return `<div class="route-step"><div class="step-icon walk">🚶</div><div class="step-text">${s.text}</div><div class="step-duration">${s.duration} min</div></div>`;
-            if (s.type==='wait') return `<div class="route-step"><div class="step-icon wait">⏱️</div><div class="step-text">${s.text}</div><div class="step-duration">${s.duration} min</div></div>`;
-            if (s.type==='bus')  return `<div class="route-step"><div class="step-icon bus">🚌</div><div class="step-text"><span class="bus-badge">${s.busName}</span></div><div class="step-duration">${s.duration} min</div></div>`;
+            if (s.type==='walk') return `<div class="route-step"><div class="step-icon walk">🚶</div><div class="step-text">${escapeHtml(s.text)}</div><div class="step-duration">${s.duration} min</div></div>`;
+            if (s.type==='wait') return `<div class="route-step"><div class="step-icon wait">⏱️</div><div class="step-text">${escapeHtml(s.text)}</div><div class="step-duration">${s.duration} min</div></div>`;
+            if (s.type==='bus')  return `<div class="route-step"><div class="step-icon bus">🚌</div><div class="step-text"><span class="bus-badge">${escapeHtml(s.busName)}</span></div><div class="step-duration">${s.duration} min</div></div>`;
             return '';
           }).join('')}
         </div>
@@ -728,7 +749,7 @@ function showRouteOnMap(idx) {
     if (step.type==='bus' && step.coords) {
       routeLayers.push(L.polyline(step.coords.map(c=>[c.lat,c.lon]), { color:'#38bdf8', weight:6, opacity:0.85 }).addTo(map));
       [[step.boardStop,'#38bdf8','Board here'],[step.alightStop,'#f87171','Get off here']].forEach(([stop,color,label]) => {
-        routeLayers.push(L.circleMarker([stop.lat,stop.lon],{radius:8,fillColor:color,color:'#fff',weight:3,fillOpacity:1}).addTo(map).bindPopup(`<strong>${label}</strong><br>${step.busName}`));
+        routeLayers.push(L.circleMarker([stop.lat,stop.lon],{radius:8,fillColor:color,color:'#fff',weight:3,fillOpacity:1}).addTo(map).bindPopup(`<strong>${label}</strong><br>${escapeHtml(step.busName)}`));
       });
     }
   });
@@ -739,10 +760,14 @@ function showRouteOnMap(idx) {
 function toggleSidebar() {
   if (sidebar.classList.contains('details-mode')) { closeSidebar(); return; }
   const open = sidebar.classList.contains('expanded');
-  sidebar.className = open ? 'sidebar' : 'sidebar expanded';
-  menuBtn.classList.toggle('close', !open);
-  directionsBtn.style.display = open ? 'flex' : 'none';
-  if (!open) setTimeout(() => { searchInput.removeAttribute('readonly'); searchInput.focus(); }, 350);
+  if (open) {
+    closeSidebar();
+  } else {
+    sidebar.className = 'sidebar expanded';
+    menuBtn.classList.add('close');
+    directionsBtn.style.display = 'none';
+    setTimeout(() => { searchInput.removeAttribute('readonly'); searchInput.focus(); }, 350);
+  }
 }
 
 function closeSidebar() {
@@ -785,7 +810,7 @@ function updateUserMenu() {
     guest.style.display  = 'none';
     logged.style.display = 'block';
     ddName.textContent   = session.name || session.username;
-    ddRole.innerHTML     = `<span class="role-badge ${session.role}">${session.role}</span>`;
+    ddRole.innerHTML     = `<span class="role-badge ${escapeHtml(session.role)}">${escapeHtml(session.role)}</span>`;
     adminLnk.style.display = (session.role==='admin'||session.role==='superadmin') ? 'flex' : 'none';
     superLnk.style.display = session.role==='superadmin' ? 'flex' : 'none';
   } else {

@@ -1,8 +1,6 @@
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    const swPath = `${location.pathname.replace(/\/$/, '')}/sw.js`;
-
-    navigator.serviceWorker.register(swPath, { scope: '/KTM-TRANSIT/' })
+    navigator.serviceWorker.register('/KTM-TRANSIT/sw.js', { scope: '/KTM-TRANSIT/' })
       .then(reg => {
         console.log(`SW registered (scope: ${reg.scope})`);
 
@@ -144,4 +142,4 @@ function updateOnlineStatus() {
 
 window.addEventListener('online',  updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus(); 
+updateOnlineStatus();
