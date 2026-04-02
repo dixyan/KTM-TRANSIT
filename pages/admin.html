@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="manifest" href="../manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="KTM Transit">
+  <link rel="apple-touch-icon" href="../assets/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png">
+  <title>KTM Transit – Route Mapping</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="../css/theme.css">
+  <style>
+    body { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+
+    .topnav { flex-shrink: 0; }
+
+    .main-area { display: flex; flex: 1; overflow: hidden; }
+
+    #map { flex: 1; }
+    .leaflet-control-zoom { display: none !important; }
+
+    .panel {
+      width: 340px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-section {
+      padding: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-section:last-child { border-bottom: none; }
+
+    .panel-title {
+      font-size: 13px; font-weight: 700;
+      color: var(--text); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-title-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); flex-shrink: 0;
+    }
+    .panel-title-dot.amber { background: var(--amber); }
+
+    .form-group { margin-bottom: 12px; }
+
+    .stop-counter {
+      font-size: 12px; color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      margin: 8px 0;
+      padding: 8px 12px;
+      background: rgba(56,189,248,0.08);
+      border: 1px solid rgba(56,189,248,0.15);
+      border-radius: 8px;
+    }
+
+    .map-instruction {
+      font-size: 11px; color: var(--muted);
+      padding: 8px 12px;
+      background: rgba(251,191,36,0.08);
+      border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 8px;
+      margin-bottom: 12px;
+      line-height: 1.5;
+    }
+
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+
+    .panel-scroll {
+      flex: 1; overflow-y: auto;
+    }
+
+    .route-item {
+      margin: 0 18px 10px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      transition: border-color 0.2s;
+    }
+    .route-item:hover { border-color: var(--border2); }
+    .route-item-header {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 8px;
+    }
+    .route-item-name { font-size: 13px; font-weight: 600; flex: 1; }
+    .route-item-meta {
+      font-size: 11px; color: var(--muted);
+      font-family: 'JetBrains Mono', monospace;
+      margin-top: 4px;
+    }
+    .status-pill {
+      font-size: 10px; font-weight: 600;
+      padding: 3px 8px; border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .status-pill.pending  { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+    .status-pill.approved { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
+    .status-pill.rejected { background: rgba(248,113,113,0.15); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
+
+    .route-item-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+    .map-controls {
+      position: absolute; bottom: 16px; right: 360px;
+      z-index: 1000; display: flex; flex-direction: column; gap: 8px;
+    }
+    .fab {
+      width: 44px; height: 44px; background: var(--surface);
+      border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow);
+    }
+    .fab:hover { background: var(--surface2); }
+    .fab svg { width: 20px; height: 20px; color: var(--text); }
+
+    .empty-state {
+      text-align: center; padding: 24px 16px;
+      color: var(--muted); font-size: 12px; line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+      .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); max-height: 50vh; }
+      .main-area { flex-direction: column; }
+      #map { min-height: 50vh; }
+      .map-controls { right: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a class="topnav-brand" href="../index.html">🚌 KTM <span>Transit</span></a>
+  <div class="topnav-links">
+    <a class="topnav-link active" href="admin.html">Route Mapping</a>
+    <a class="topnav-link" href="../index.html">← Back to Map</a>
+  </div>
+  <div class="topnav-right">
+    <span id="navRoleBadge"></span>
+    <span id="navUserName" style="font-size:13px;color:var(--muted)"></span>
+    <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<div class="main-area">
+  <div id="map"></div>
+
+  <div class="panel">
+
+    <div class="panel-section">
+      <div class="panel-title">
+        <div class="panel-title-dot"></div>
+        Map a New Route
+      </div>
+
+      <div class="map-instruction">
+        🖱️ Click points on the map to add stops in order. Each click adds the next stop along the route.
+      </div>
+
+      <div class="form-group">
+        <label class="input-label">Route Name</label>
+        <input class="input" id="busName" placeholder="e.g. Bagbazar – Bhaktapur">
+      </div>
+      <div class="form-group">
+        <label class="input-label">Frequency (minutes)</label>
+        <input class="input" type="number" id="busFreq" placeholder="e.g. 10" min="1" max="120">
+      </div>
+
+      <div class="stop-counter" id="stopCounter">0 stops added — click the map to begin</div>
+
+      <div class="btn-row" style="margin-bottom:8px">
+        <button class="btn btn-success" onclick="submitRoute()">💾 Submit for Approval</button>
+        <button class="btn btn-danger btn-sm" onclick="clearStops()">🗑️ Clear</button>
+      </div>
+      <button class="btn btn-secondary btn-full btn-sm" onclick="exportJSON()">📤 Export JSON</button>
+    </div>
+
+    <div class="panel-section" style="padding-bottom:8px">
+      <div class="panel-title">
+        <div class="panel-title-dot amber"></div>
+        My Submitted Routes
+      </div>
+    </div>
+
+    <div class="panel-scroll" id="myRoutesList">
+      <div class="empty-state">No routes submitted yet.<br>Map stops above and submit for approval.</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="map-controls">
+  <button class="fab" onclick="map.zoomIn()">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </button>
+  <button class="fab" onclick="map.zoomOut()">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/db.js"></script>
+<script src="../js/pwa.js"></script>
+<script>
+let map, db, session;
+let currentStops = [];
+let stopMarkers  = [];
+let stopLines    = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Auth check
+  session = requireRole(['admin', 'superadmin'], 'login.html?next=admin.html');
+  if (!session) return;
+
+  document.getElementById('navUserName').textContent = session.name || session.username;
+  document.getElementById('navRoleBadge').innerHTML  = `<span class="role-badge ${session.role}">${session.role}</span>`;
+
+  db = await openDB();
+  await seedUsers(db);
+
+  map = L.map('map', { zoomControl: false }).setView([27.7172, 85.3240], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+
+  map.on('click', onMapClick);
+
+  await loadMyRoutes();
+});
+
+function onMapClick(e) {
+  const { lat, lng: lon } = e.latlng;
+  currentStops.push({ lat, lon });
+  updateStopCounter();
+
+  // Marker
+  const num = currentStops.length;
+  const marker = L.marker([lat, lon], {
+    icon: L.divIcon({
+      html: `<div style="background:#38bdf8;color:#0f172a;width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:Sora,sans-serif;">${num}</div>`,
+      iconSize: [32, 32], className: ''
+    })
+  }).addTo(map);
+  stopMarkers.push(marker);
+
+  // Line to previous stop
+  if (currentStops.length > 1) {
+    const prev = currentStops[currentStops.length - 2];
+    const line = L.polyline([[prev.lat, prev.lon],[lat, lon]], { color:'#38bdf8', weight:4, opacity:0.8 }).addTo(map);
+    stopLines.push(line);
+  }
+}
+
+function updateStopCounter() {
+  const n = currentStops.length;
+  document.getElementById('stopCounter').textContent =
+    n === 0 ? '0 stops added — click the map to begin' :
+    n === 1 ? '1 stop added' :
+    `${n} stops added`;
+}
+
+async function submitRoute() {
+  const name = document.getElementById('busName').value.trim();
+  const freq = parseInt(document.getElementById('busFreq').value);
+
+  if (!name)            { showToast('Enter a route name', 'error'); return; }
+  if (!freq || freq<1)  { showToast('Enter a valid frequency', 'error'); return; }
+  if (currentStops.length < 2) { showToast('Add at least 2 stops', 'error'); return; }
+
+  const route = {
+    name,
+    frequency: freq,
+    stops: [...currentStops],
+    status: 'pending',
+    submittedBy: session.username,
+    submittedAt: new Date().toISOString(),
+  };
+
+  await dbAdd(db, STORE_PENDING, route);
+  showToast('Route submitted for approval ✓', 'success');
+  clearStops();
+  document.getElementById('busName').value = '';
+  document.getElementById('busFreq').value = '';
+  await loadMyRoutes();
+}
+
+async function loadMyRoutes() {
+  const all = await dbGetAll(db, STORE_PENDING);
+  const mine = all.filter(r => r.submittedBy === session.username || session.role === 'superadmin');
+  renderMyRoutes(mine);
+}
+
+function renderMyRoutes(routes) {
+  const c = document.getElementById('myRoutesList');
+  if (!routes.length) {
+    c.innerHTML = '<div class="empty-state">No routes submitted yet.<br>Map stops above and submit for approval.</div>';
+    return;
+  }
+  c.innerHTML = routes.sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt)).map(r => `
+    <div class="route-item">
+      <div class="route-item-header">
+        <div>
+          <div class="route-item-name">${r.name}</div>
+          <div class="route-item-meta">${r.stops.length} stops · every ${r.frequency} min</div>
+          <div class="route-item-meta">${new Date(r.submittedAt).toLocaleDateString()}</div>
+        </div>
+        <span class="status-pill ${r.status}">${r.status}</span>
+      </div>
+      <div class="route-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="previewRoute(${r.id})">Preview</button>
+        ${r.status==='pending' ? `<button class="btn btn-danger btn-sm" onclick="withdrawRoute(${r.id})">Withdraw</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function previewRoute(id) {
+  dbGetAll(db, STORE_PENDING).then(all => {
+    const r = all.find(x => x.id === id);
+    if (!r) return;
+    if (r.stops.length < 2) return;
+    const coords = r.stops.map(s => [s.lat, s.lon]);
+    const line = L.polyline(coords, { color:'#818cf8', weight:5, opacity:0.85 }).addTo(map);
+    map.fitBounds(line.getBounds(), { padding:[40,40] });
+    setTimeout(() => map.removeLayer(line), 5000);
+  });
+}
+
+async function withdrawRoute(id) {
+  if (!confirm('Withdraw this route submission?')) return;
+  await dbDelete(db, STORE_PENDING, id);
+  showToast('Route withdrawn');
+  await loadMyRoutes();
+}
+
+function clearStops() {
+  currentStops = [];
+  stopMarkers.forEach(m => map.removeLayer(m));
+  stopLines.forEach(l => map.removeLayer(l));
+  stopMarkers = []; stopLines = [];
+  updateStopCounter();
+}
+
+async function exportJSON() {
+  const routes = await dbGetAll(db, STORE_PENDING);
+  const mine = routes.filter(r => r.submittedBy === session.username);
+  const blob = new Blob([JSON.stringify(mine, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ktm_my_routes_${Date.now()}.json`;
+  a.click();
+}
+
+function doLogout() {
+  clearSession();
+  window.location.href = '../index.html';
+}
+</script>
+</body>
+</html>
