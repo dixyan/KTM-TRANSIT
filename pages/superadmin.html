@@ -23,11 +23,15 @@
       display: flex;
       align-items: center;
       gap: 0;
-      padding: 0 12px;
+      padding: 0 10px;
       height: 52px;
       flex-shrink: 0;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
+      /* prevent any child from causing overflow */
+      overflow: hidden;
+      width: 100%;
+      box-sizing: border-box;
     }
     .topnav-brand {
       font-size: 15px;
@@ -35,7 +39,7 @@
       white-space: nowrap;
       text-decoration: none;
       color: var(--text);
-      margin-right: 8px;
+      margin-right: 6px;
       flex-shrink: 0;
     }
     .topnav-brand span { color: var(--accent); }
@@ -51,7 +55,7 @@
     .topnav-link {
       font-size: 12px;
       font-weight: 500;
-      padding: 5px 9px;
+      padding: 5px 8px;
       border-radius: 7px;
       white-space: nowrap;
       text-decoration: none;
@@ -180,7 +184,7 @@
     @media (max-width: 768px) {
       body { overflow: auto; height: auto; min-height: 100vh; }
 
-      .topnav { height: auto; min-height: 52px; padding: 8px 10px; flex-wrap: nowrap; }
+      .topnav { height: 52px; padding: 0 10px; overflow: hidden; }
 
       .topnav-links {
         display: none; 
@@ -253,10 +257,11 @@
       .user-actions .btn { font-size: 11px; padding: 7px 12px; }
     }
 
-    /* show back link only on mobile */
     .topnav-back { display: none; }
     @media (max-width: 768px) {
       .topnav-back { display: flex; }
+      /* hide role badge on mobile — saves space */
+      #navRoleBadge { display: none; }
     }
 
     @media (max-width: 400px) {
@@ -277,8 +282,7 @@
     <a class="topnav-link" href="../index.html">← Back</a>
   </div>
 
-  <a class="topnav-back" href="../index.html">← Map</a>
-  <a class="topnav-back" href="admin.html">Mapping</a>
+  <a class="topnav-back" href="../index.html">← Back</a>
 
   <div class="topnav-right">
     <span id="navRoleBadge"></span>

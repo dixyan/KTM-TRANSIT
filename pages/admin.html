@@ -24,12 +24,15 @@
     .topnav {
       display: flex;
       align-items: center;
-      padding: 0 12px;
+      padding: 0 10px;
       height: 52px;
       flex-shrink: 0;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
       gap: 0;
+      overflow: hidden;
+      width: 100%;
+      box-sizing: border-box;
     }
     .topnav-brand {
       font-size: 15px;
@@ -182,8 +185,10 @@
     @media (max-width: 768px) {
       body { overflow: auto; height: auto; min-height: 100vh; }
 
-      .topnav { height: auto; min-height: 52px; padding: 8px 10px; }
+      .topnav { height: 52px; padding: 0 10px; overflow: hidden; }
       .topnav-links { display: none; }
+      #navUserName { display: none !important; }
+      #navRoleBadge { display: none !important; }
       .topnav-back {
         display: flex;
         align-items: center;
