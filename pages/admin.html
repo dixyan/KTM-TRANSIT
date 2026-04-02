@@ -33,14 +33,14 @@
     }
 
     .panel-section {
-      padding: 18px;
+      padding: 16px;
       border-bottom: 1px solid var(--border);
     }
     .panel-section:last-child { border-bottom: none; }
 
     .panel-title {
       font-size: 13px; font-weight: 700;
-      color: var(--text); margin-bottom: 14px;
+      color: var(--text); margin-bottom: 12px;
       display: flex; align-items: center; gap: 8px;
     }
     .panel-title-dot {
@@ -49,7 +49,7 @@
     }
     .panel-title-dot.amber { background: var(--amber); }
 
-    .form-group { margin-bottom: 12px; }
+    .form-group { margin-bottom: 10px; }
 
     .stop-counter {
       font-size: 12px; color: var(--accent);
@@ -67,7 +67,7 @@
       background: rgba(251,191,36,0.08);
       border: 1px solid rgba(251,191,36,0.15);
       border-radius: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       line-height: 1.5;
     }
 
@@ -79,7 +79,7 @@
     }
 
     .route-item {
-      margin: 0 18px 10px;
+      margin: 0 16px 10px;
       background: var(--surface2);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -106,7 +106,8 @@
     .status-pill.approved { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
     .status-pill.rejected { background: rgba(248,113,113,0.15); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
 
-    .route-item-actions { display: flex; gap: 6px; margin-top: 10px; }
+    .route-item-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .route-item-actions .btn { flex: 1; min-width: 80px; }
 
     .map-controls {
       position: absolute; bottom: 16px; right: 360px;
@@ -127,10 +128,52 @@
     }
 
     @media (max-width: 768px) {
-      .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); max-height: 50vh; }
-      .main-area { flex-direction: column; }
-      #map { min-height: 50vh; }
-      .map-controls { right: 16px; }
+      body { overflow: auto; height: auto; min-height: 100vh; }
+
+      .main-area { flex-direction: column; overflow: visible; }
+
+      #map {
+        height: 45vh;
+        min-height: 280px;
+        flex: none;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+
+      .panel {
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        overflow: visible;
+        max-height: none;
+      }
+
+      .panel-scroll {
+        overflow: visible;
+        padding-bottom: 80px;
+      }
+
+      .map-controls {
+        right: 12px;
+        bottom: auto;
+        top: calc(45vh - 140px);
+        z-index: 20;
+      }
+
+      .export-btn { width: 100%; margin-top: 8px; }
+
+      .btn-row { gap: 6px; }
+      .btn-row .btn { font-size: 12px; padding: 8px 10px; }
+
+      .route-item { margin: 0 12px 10px; }
+      .route-item-actions .btn { min-width: 70px; font-size: 11px; padding: 7px 8px; }
+    }
+
+    @media (max-width: 400px) {
+      .panel-section { padding: 12px; }
+      .route-item-actions { flex-direction: column; }
+      .route-item-actions .btn { width: 100%; }
     }
   </style>
 </head>
@@ -140,7 +183,7 @@
   <a class="topnav-brand" href="../index.html">🚌 KTM <span>Transit</span></a>
   <div class="topnav-links">
     <a class="topnav-link active" href="admin.html">Route Mapping</a>
-    <a class="topnav-link" href="../index.html">← Back to Map</a>
+    <a class="topnav-link" href="../index.html">← Back</a>
   </div>
   <div class="topnav-right">
     <span id="navRoleBadge"></span>
@@ -176,10 +219,10 @@
       <div class="stop-counter" id="stopCounter">0 stops added — click the map to begin</div>
 
       <div class="btn-row" style="margin-bottom:8px">
-        <button class="btn btn-success" onclick="submitRoute()">💾 Submit for Approval</button>
+        <button class="btn btn-success" onclick="submitRoute()">💾 Submit</button>
         <button class="btn btn-danger btn-sm" onclick="clearStops()">🗑️ Clear</button>
       </div>
-      <button class="btn btn-secondary btn-full btn-sm" onclick="exportJSON()">📤 Export JSON</button>
+      <button class="btn btn-secondary btn-full btn-sm export-btn" onclick="exportJSON()">📤 Export JSON</button>
     </div>
 
     <div class="panel-section" style="padding-bottom:8px">

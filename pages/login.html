@@ -18,7 +18,8 @@
       align-items: center;
       justify-content: center;
       background: var(--bg);
-      padding: 20px;
+      padding: 16px;
+      box-sizing: border-box;
     }
 
     body::before {
@@ -42,7 +43,7 @@
 
     .brand {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .brand-logo {
       width: 52px; height: 52px;
@@ -84,17 +85,17 @@
       transform: translateX(0);
     }
 
-    .auth-body { padding: 28px; }
+    .auth-body { padding: 24px; }
 
     .tab-pane { display: none; }
     .tab-pane.active { display: block; }
 
-    .form-group { margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
 
-    .input-row { display: flex; gap: 12px; }
-    .input-row .form-group { flex: 1; }
+    .input-row { display: flex; gap: 10px; }
+    .input-row .form-group { flex: 1; min-width: 0; }
 
-    .role-select-group { margin-bottom: 16px; }
+    .role-select-group { margin-bottom: 14px; }
     .role-options { display: flex; gap: 8px; }
     .role-option {
       flex: 1; padding: 10px 8px;
@@ -112,16 +113,8 @@
     .role-option-label { font-size: 11px; font-weight: 600; color: var(--muted); }
     .role-option.selected .role-option-label { color: var(--text); }
 
-    .divider {
-      display: flex; align-items: center; gap: 12px;
-      margin: 20px 0; color: var(--muted); font-size: 12px;
-    }
-    .divider::before, .divider::after {
-      content: ''; flex: 1; height: 1px; background: var(--border);
-    }
-
     .back-link {
-      display: block; text-align: center; margin-top: 20px;
+      display: block; text-align: center; margin-top: 18px;
       font-size: 12px; color: var(--muted); text-decoration: none;
     }
     .back-link:hover { color: var(--accent); }
@@ -133,7 +126,7 @@
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       display: none;
     }
     .error-msg.show { display: block; }
@@ -145,8 +138,22 @@
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 11px;
-      margin-top: 16px;
+      margin-top: 14px;
       line-height: 1.6;
+    }
+
+    @media (max-width: 480px) {
+      body { align-items: flex-start; padding-top: 24px; }
+
+      .auth-body { padding: 18px; }
+
+      .input-row { flex-direction: column; gap: 0; }
+      .input-row .form-group { width: 100%; }
+
+      .auth-tab { font-size: 13px; padding: 12px 8px; }
+
+      .role-option { padding: 8px 4px; }
+      .role-option-icon { font-size: 16px; }
     }
   </style>
 </head>
@@ -171,11 +178,11 @@
         <div class="error-msg" id="signinError"></div>
         <div class="form-group">
           <label class="input-label">Username</label>
-          <input class="input" type="text" id="siUsername" placeholder="Enter your username">
+          <input class="input" type="text" id="siUsername" placeholder="Enter your username" autocomplete="username">
         </div>
         <div class="form-group">
           <label class="input-label">Password</label>
-          <input class="input" type="password" id="siPassword" placeholder="Enter your password">
+          <input class="input" type="password" id="siPassword" placeholder="Enter your password" autocomplete="current-password">
         </div>
         <button class="btn btn-primary btn-full" onclick="doSignIn()" style="margin-top:4px">Sign In →</button>
 
@@ -191,16 +198,16 @@
         <div class="input-row">
           <div class="form-group">
             <label class="input-label">Full Name</label>
-            <input class="input" type="text" id="suName" placeholder="Your name">
+            <input class="input" type="text" id="suName" placeholder="Your name" autocomplete="name">
           </div>
           <div class="form-group">
             <label class="input-label">Username</label>
-            <input class="input" type="text" id="suUsername" placeholder="Choose username">
+            <input class="input" type="text" id="suUsername" placeholder="Choose username" autocomplete="username">
           </div>
         </div>
         <div class="form-group">
           <label class="input-label">Password</label>
-          <input class="input" type="password" id="suPassword" placeholder="Create password (min 6 chars)">
+          <input class="input" type="password" id="suPassword" placeholder="Create password (min 6 chars)" autocomplete="new-password">
         </div>
 
         <div class="role-select-group">
