@@ -2,7 +2,7 @@
   "name": "KTM Transit – Kathmandu Route Planner",
   "short_name": "KTM Transit",
   "description": "Plan bus routes across Kathmandu Valley using real stop data.",
-  "start_url": "ktm-transit/index.html",
+  "start_url": "KTM-TRANSIT/index.html",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
