@@ -14,158 +14,146 @@
   <link rel="stylesheet" href="../css/theme.css">
   <style>
     body { overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
-
     .topnav { flex-shrink: 0; }
     .main-area { display: flex; flex: 1; overflow: hidden; }
-
     #map { flex: 1; }
     .leaflet-control-zoom { display: none !important; }
 
+    
     .topnav {
-      display: flex;
-      align-items: center;
-      padding: 0 10px;
-      height: 52px;
-      flex-shrink: 0;
-      border-bottom: 1px solid var(--border);
-      background: var(--surface);
-      gap: 0;
-      overflow: hidden;
-      width: 100%;
-      box-sizing: border-box;
+      display: flex; align-items: center; padding: 0 10px; height: 52px;
+      flex-shrink: 0; border-bottom: 1px solid var(--border);
+      background: var(--surface); gap: 0; overflow: hidden;
+      width: 100%; box-sizing: border-box;
     }
-    .topnav-brand {
-      font-size: 15px;
-      font-weight: 700;
-      white-space: nowrap;
-      text-decoration: none;
-      color: var(--text);
-      margin-right: 8px;
-      flex-shrink: 0;
-    }
+    .topnav-brand { font-size: 15px; font-weight: 700; white-space: nowrap; text-decoration: none; color: var(--text); margin-right: 8px; flex-shrink: 0; }
     .topnav-brand span { color: var(--accent); }
-
-    .topnav-links {
-      display: flex;
-      align-items: center;
-      gap: 2px;
-      flex: 1;
-      min-width: 0;
-      overflow: hidden;
-    }
-    .topnav-link {
-      font-size: 12px;
-      font-weight: 500;
-      padding: 5px 9px;
-      border-radius: 7px;
-      white-space: nowrap;
-      text-decoration: none;
-      color: var(--muted);
-      transition: all 0.2s;
-      flex-shrink: 0;
-    }
+    .topnav-links { display: flex; align-items: center; gap: 2px; flex: 1; min-width: 0; overflow: hidden; }
+    .topnav-link { font-size: 12px; font-weight: 500; padding: 5px 9px; border-radius: 7px; white-space: nowrap; text-decoration: none; color: var(--muted); transition: all 0.2s; flex-shrink: 0; }
     .topnav-link:hover  { color: var(--text); background: var(--faint); }
     .topnav-link.active { color: var(--text); background: var(--surface2); }
-
-    .topnav-right {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-shrink: 0;
-      margin-left: 6px;
-    }
-
+    .topnav-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; margin-left: 6px; }
     .topnav-back { display: none; }
 
+    
     .panel {
-      width: 340px;
-      flex-shrink: 0;
-      background: var(--surface);
+      width: 360px; flex-shrink: 0; background: var(--surface);
       border-left: 1px solid var(--border);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
+      display: flex; flex-direction: column; overflow: hidden;
     }
 
-    .panel-section {
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
+    
+    .panel-tabs {
+      display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0;
     }
-    .panel-section:last-child { border-bottom: none; }
+    .ptab {
+      flex: 1; padding: 13px 8px; text-align: center; font-size: 12px; font-weight: 600;
+      cursor: pointer; color: var(--muted); transition: all 0.2s;
+      border: none; background: none; font-family: 'Sora', sans-serif;
+      border-bottom: 2px solid transparent;
+    }
+    .ptab.active { color: var(--text); border-bottom-color: var(--accent); }
 
-    .panel-title {
-      font-size: 13px; font-weight: 700;
-      color: var(--text); margin-bottom: 12px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .panel-title-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent); flex-shrink: 0;
-    }
+    .panel-tab-body { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
+    .tab-pane { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .tab-pane.active { display: flex; }
+
+    
+    .panel-section { padding: 14px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .panel-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .panel-title-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
     .panel-title-dot.amber { background: var(--amber); }
 
     .form-group { margin-bottom: 10px; }
+    .form-row { display: flex; gap: 8px; }
+    .form-row .form-group { flex: 1; min-width: 0; }
 
     .stop-counter {
-      font-size: 12px; color: var(--accent);
-      font-family: 'JetBrains Mono', monospace;
-      margin: 8px 0;
-      padding: 8px 12px;
-      background: rgba(56,189,248,0.08);
-      border: 1px solid rgba(56,189,248,0.15);
-      border-radius: 8px;
+      font-size: 12px; color: var(--accent); font-family: 'JetBrains Mono', monospace;
+      margin: 8px 0; padding: 8px 12px;
+      background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.15); border-radius: 8px;
     }
-
     .map-instruction {
-      font-size: 11px; color: var(--muted);
-      padding: 8px 12px;
-      background: rgba(251,191,36,0.08);
-      border: 1px solid rgba(251,191,36,0.15);
-      border-radius: 8px;
-      margin-bottom: 10px;
-      line-height: 1.5;
+      font-size: 11px; color: var(--muted); padding: 8px 12px;
+      background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.15);
+      border-radius: 8px; margin-bottom: 10px; line-height: 1.5;
     }
 
-    .btn-row { display: flex; gap: 8px; }
-    .btn-row .btn { flex: 1; }
-
-    .panel-scroll {
-      flex: 1; overflow-y: auto;
+    .color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .color-row label { font-size: 11px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; flex-shrink: 0; }
+    .color-swatch {
+      width: 28px; height: 28px; border-radius: 50%; cursor: pointer;
+      border: 3px solid transparent; transition: all 0.15s; flex-shrink: 0;
     }
+    .color-swatch.selected { border-color: #fff; box-shadow: 0 0 0 2px var(--accent); }
 
+    
+    .stop-list-wrap { flex: 1; overflow-y: auto; padding: 8px 12px; }
+    .stop-list-empty { text-align: center; color: var(--muted); font-size: 11px; padding: 16px 0; }
+
+    .stop-row {
+      display: flex; align-items: center; gap: 8px; padding: 6px 4px;
+      border-bottom: 1px solid var(--border); transition: background 0.15s;
+      border-radius: 6px;
+    }
+    .stop-row:hover { background: var(--faint); }
+    .stop-num {
+      width: 22px; height: 22px; border-radius: 50%; background: #38bdf8;
+      color: #0f172a; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .stop-name-input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: 12px; font-family: 'Sora', sans-serif; color: var(--text);
+      padding: 2px 4px; border-radius: 4px; min-width: 0;
+      transition: background 0.15s, border 0.15s;
+      border-bottom: 1px solid transparent;
+    }
+    .stop-name-input:focus {
+      background: var(--surface2); border-bottom-color: var(--accent);
+    }
+    .stop-name-input::placeholder { color: var(--muted); font-style: italic; }
+    .stop-coords { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+    .stop-del-btn {
+      background: none; border: none; color: var(--red); cursor: pointer;
+      padding: 2px 5px; border-radius: 4px; font-size: 13px; opacity: 0;
+      transition: opacity 0.15s, background 0.15s; flex-shrink: 0;
+    }
+    .stop-row:hover .stop-del-btn { opacity: 1; }
+    .stop-del-btn:hover { background: rgba(248,113,113,0.12); }
+
+    
+    .panel-scroll { flex: 1; overflow-y: auto; }
     .route-item {
-      margin: 0 16px 10px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 14px;
-      transition: border-color 0.2s;
+      margin: 0 12px 10px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px; transition: border-color 0.2s;
     }
     .route-item:hover { border-color: var(--border2); }
-    .route-item-header {
-      display: flex; justify-content: space-between;
-      align-items: flex-start; gap: 8px;
-    }
+    .route-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
     .route-item-name { font-size: 13px; font-weight: 600; flex: 1; }
-    .route-item-meta {
-      font-size: 11px; color: var(--muted);
-      font-family: 'JetBrains Mono', monospace;
-      margin-top: 4px;
-    }
-    .status-pill {
-      font-size: 10px; font-weight: 600;
-      padding: 3px 8px; border-radius: 20px;
-      flex-shrink: 0;
-    }
+    .route-item-meta { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-top: 4px; }
+    .status-pill { font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
     .status-pill.pending  { background: rgba(251,191,36,0.15); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
     .status-pill.approved { background: rgba(52,211,153,0.15); color: var(--green); border: 1px solid rgba(52,211,153,0.3); }
     .status-pill.rejected { background: rgba(248,113,113,0.15); color: var(--red);   border: 1px solid rgba(248,113,113,0.3); }
-
     .route-item-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
     .route-item-actions .btn { flex: 1; min-width: 80px; }
 
+    
+    .route-stops-expand {
+      margin-top: 8px; padding: 8px 10px;
+      background: var(--bg); border-radius: 8px; display: none;
+    }
+    .route-stops-expand.show { display: block; }
+    .rse-stop { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 11px; }
+    .rse-num { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+    .rse-name { flex: 1; color: var(--text); }
+    .rse-coords { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; }
+
+    
     .map-controls {
-      position: absolute; bottom: 16px; right: 360px;
+      position: absolute; bottom: 16px; right: 376px;
       z-index: 1000; display: flex; flex-direction: column; gap: 8px;
     }
     .fab {
@@ -177,76 +165,53 @@
     .fab:hover { background: var(--surface2); }
     .fab svg { width: 20px; height: 20px; color: var(--text); }
 
-    .empty-state {
-      text-align: center; padding: 24px 16px;
-      color: var(--muted); font-size: 12px; line-height: 1.7;
+    .empty-state { text-align: center; padding: 24px 16px; color: var(--muted); font-size: 12px; line-height: 1.7; }
+
+    .btn-row { display: flex; gap: 8px; }
+    .btn-row .btn { flex: 1; }
+
+    
+    .leaflet-popup-content-wrapper {
+      background: var(--surface) !important; color: var(--text) !important;
+      border: 1px solid var(--border) !important; border-radius: 10px !important;
+      box-shadow: var(--shadow) !important;
     }
+    .leaflet-popup-tip { background: var(--surface) !important; }
+    .leaflet-popup-content { font-family: 'Sora', sans-serif; font-size: 12px; min-width: 160px; }
+    .popup-stop-name { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+    .popup-stop-input {
+      width: 100%; box-sizing: border-box;
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 5px 8px; font-size: 12px; font-family: 'Sora', sans-serif;
+      color: var(--text); background: var(--surface2); outline: none; margin-bottom: 6px;
+    }
+    .popup-stop-input:focus { border-color: var(--accent); }
 
     @media (max-width: 768px) {
       body { overflow: auto; height: auto; min-height: 100vh; }
-
       .topnav { height: 52px; padding: 0 10px; overflow: hidden; }
       .topnav-links { display: none; }
       #navUserName { display: none !important; }
       #navRoleBadge { display: none !important; }
       .topnav-back {
-        display: flex;
-        align-items: center;
-        font-size: 12px;
-        color: var(--muted);
-        text-decoration: none;
-        padding: 4px 7px;
-        border-radius: 7px;
-        white-space: nowrap;
-        transition: all 0.2s;
-        margin-right: 4px;
-        flex-shrink: 0;
+        display: flex; align-items: center; font-size: 12px; color: var(--muted);
+        text-decoration: none; padding: 4px 7px; border-radius: 7px;
+        white-space: nowrap; transition: all 0.2s; margin-right: 4px; flex-shrink: 0;
       }
       .topnav-back:hover { color: var(--text); background: var(--faint); }
       .topnav-right { margin-left: auto; }
-
       .main-area { flex-direction: column; overflow: visible; }
-
-      #map {
-        height: 45vh;
-        min-height: 280px;
-        flex: none;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-      }
-
-      .panel {
-        width: 100%;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        overflow: visible;
-        max-height: none;
-      }
-
-      .panel-scroll {
-        overflow: visible;
-        padding-bottom: 80px;
-      }
-
-      .map-controls {
-        right: 12px;
-        bottom: auto;
-        top: calc(45vh - 140px);
-        z-index: 20;
-      }
-
-      .export-btn { width: 100%; margin-top: 8px; }
-
-      .btn-row { gap: 6px; }
+      #map { height: 45vh; min-height: 280px; flex: none; position: sticky; top: 0; z-index: 10; }
+      .panel { width: 100%; border-left: none; border-top: 1px solid var(--border); overflow: visible; max-height: none; }
+      .panel-tab-body { overflow: visible; }
+      .tab-pane.active { display: flex; flex-direction: column; overflow: visible; }
+      .stop-list-wrap { overflow: visible; max-height: none; }
+      .panel-scroll { overflow: visible; padding-bottom: 80px; }
+      .map-controls { right: 12px; bottom: auto; top: calc(45vh - 110px); z-index: 20; }
       .btn-row .btn { font-size: 12px; padding: 8px 10px; }
-
-      .route-item { margin: 0 12px 10px; }
-      .route-item-actions .btn { min-width: 70px; font-size: 11px; padding: 7px 8px; }
     }
-
     @media (max-width: 400px) {
-      .panel-section { padding: 12px; }
+      .panel-section { padding: 10px 12px; }
       .route-item-actions { flex-direction: column; }
       .route-item-actions .btn { width: 100%; }
     }
@@ -256,14 +221,11 @@
 
 <nav class="topnav">
   <a class="topnav-brand" href="../index.html">🚌 KTM <span>Transit</span></a>
-
   <div class="topnav-links">
     <a class="topnav-link active" href="admin.html">Route Mapping</a>
-    <a class="topnav-link" href="../index.html">← Back</a>
+    <a class="topnav-link" href="../index.html">← Back to Map</a>
   </div>
-
   <a class="topnav-back" href="../index.html">← Map</a>
-
   <div class="topnav-right">
     <span id="navRoleBadge"></span>
     <span id="navUserName" style="font-size:13px;color:var(--muted)"></span>
@@ -275,55 +237,94 @@
   <div id="map"></div>
 
   <div class="panel">
-
-    <div class="panel-section">
-      <div class="panel-title">
-        <div class="panel-title-dot"></div>
-        Map a New Route
-      </div>
-
-      <div class="map-instruction">
-        🖱️ Click points on the map to add stops in order. Each click adds the next stop along the route.
-      </div>
-
-      <div class="form-group">
-        <label class="input-label">Route Name</label>
-        <input class="input" id="busName" placeholder="e.g. Bagbazar – Bhaktapur">
-      </div>
-      <div class="form-group">
-        <label class="input-label">Frequency (minutes)</label>
-        <input class="input" type="number" id="busFreq" placeholder="e.g. 10" min="1" max="120">
-      </div>
-
-      <div class="stop-counter" id="stopCounter">0 stops added — click the map to begin</div>
-
-      <div class="btn-row" style="margin-bottom:8px">
-        <button class="btn btn-success" onclick="submitRoute()">💾 Submit</button>
-        <button class="btn btn-danger btn-sm" onclick="clearStops()">🗑️ Clear</button>
-      </div>
-      <button class="btn btn-secondary btn-full btn-sm export-btn" onclick="exportJSON()">📤 Export JSON</button>
+    
+    <div class="panel-tabs">
+      <button class="ptab active" id="tabMap"       onclick="switchTab('map')">🗺 Map Route</button>
+      <button class="ptab"        id="tabSubmitted"  onclick="switchTab('submitted')">📋 Submitted</button>
     </div>
 
-    <div class="panel-section" style="padding-bottom:8px">
-      <div class="panel-title">
-        <div class="panel-title-dot amber"></div>
-        My Submitted Routes
+    <div class="panel-tab-body">
+
+      
+      <div class="tab-pane active" id="paneMap">
+
+        
+        <div class="panel-section">
+          <div class="panel-title">
+            <div class="panel-title-dot"></div>
+            Route Details
+          </div>
+
+          <div class="map-instruction">
+            🖱️ Click the map to place stops in order. Name each stop in the list below, then submit.
+          </div>
+
+          <div class="form-group">
+            <label class="input-label">Route Name</label>
+            <input class="input" id="busName" placeholder="e.g. Bagbazar – Bhaktapur">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="input-label">Frequency (min)</label>
+              <input class="input" type="number" id="busFreq" placeholder="e.g. 10" min="1" max="120">
+            </div>
+            <div class="form-group">
+              <label class="input-label">Route Color</label>
+              <div class="color-row" style="margin-bottom:0">
+                <div class="color-swatch selected" style="background:#38bdf8" data-color="#38bdf8" onclick="selectColor(this)" title="Sky Blue"></div>
+                <div class="color-swatch" style="background:#a78bfa" data-color="#a78bfa" onclick="selectColor(this)" title="Violet"></div>
+                <div class="color-swatch" style="background:#34d399" data-color="#34d399" onclick="selectColor(this)" title="Emerald"></div>
+                <div class="color-swatch" style="background:#fb923c" data-color="#fb923c" onclick="selectColor(this)" title="Orange"></div>
+                <div class="color-swatch" style="background:#f472b6" data-color="#f472b6" onclick="selectColor(this)" title="Pink"></div>
+                <div class="color-swatch" style="background:#facc15" data-color="#facc15" onclick="selectColor(this)" title="Yellow"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="stop-counter" id="stopCounter">0 stops — click the map to begin</div>
+
+          <div class="btn-row" style="margin-bottom:8px">
+            <button class="btn btn-success" onclick="submitRoute()">💾 Submit Route</button>
+            <button class="btn btn-danger btn-sm" onclick="clearStops()">🗑 Clear</button>
+          </div>
+          <button class="btn btn-secondary btn-full btn-sm" onclick="exportJSON()">📤 Export JSON</button>
+        </div>
+
+        
+        <div style="padding:10px 16px 6px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.7px">Stop Details</span>
+          <span style="font-size:10px;color:var(--muted)">Click a stop name to edit</span>
+        </div>
+        <div class="stop-list-wrap" id="stopListWrap">
+          <div class="stop-list-empty" id="stopListEmpty">No stops yet. Click the map to add stops.</div>
+        </div>
+
       </div>
-    </div>
 
-    <div class="panel-scroll" id="myRoutesList">
-      <div class="empty-state">No routes submitted yet.<br>Map stops above and submit for approval.</div>
-    </div>
+      
+      <div class="tab-pane" id="paneSubmitted">
+        <div style="padding:12px 16px 8px;border-bottom:1px solid var(--border);flex-shrink:0">
+          <div class="panel-title" style="margin-bottom:0">
+            <div class="panel-title-dot amber"></div>
+            My Submitted Routes
+          </div>
+        </div>
+        <div class="panel-scroll" id="myRoutesList">
+          <div class="empty-state">No routes submitted yet.<br>Map stops and submit for approval.</div>
+        </div>
+      </div>
 
+    </div>
   </div>
 </div>
 
 <div class="map-controls">
   <button class="fab" onclick="map.zoomIn()">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
   <button class="fab" onclick="map.zoomOut()">
-    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
   </button>
 </div>
 
@@ -332,18 +333,34 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/pwa.js"></script>
+<script type="module">
+  import { supabase } from '../js/supabase.js';
+  window.sb = supabase;
+  window.dispatchEvent(new Event('supabase-ready'));
+</script>
 <script>
 let map, db, session;
-let currentStops = [];
-let stopMarkers  = [];
-let stopLines    = [];
+let currentStops  = [];
+let stopMarkers   = [];
+let stopLines     = [];
+let selectedColor = '#38bdf8';
+let activePopup   = null;
+
+
+function waitForSupabase() {
+  return new Promise(resolve => {
+    if (window.sb) { resolve(window.sb); return; }
+    window.addEventListener('supabase-ready', () => resolve(window.sb), { once: true });
+  });
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   session = requireRole(['admin', 'superadmin'], 'login.html?next=admin.html');
   if (!session) return;
 
   document.getElementById('navUserName').textContent = session.name || session.username;
-  document.getElementById('navRoleBadge').innerHTML  = `<span class="role-badge ${session.role}">${session.role}</span>`;
+  document.getElementById('navRoleBadge').innerHTML  =
+    `<span class="role-badge ${session.role}">${session.role}</span>`;
 
   db = await openDB();
   await seedUsers(db);
@@ -354,68 +371,273 @@ document.addEventListener('DOMContentLoaded', async () => {
   }).addTo(map);
 
   map.on('click', onMapClick);
-
   await loadMyRoutes();
 });
 
+
+function switchTab(tab) {
+  document.getElementById('tabMap').classList.toggle('active',       tab==='map');
+  document.getElementById('tabSubmitted').classList.toggle('active', tab==='submitted');
+  document.getElementById('paneMap').classList.toggle('active',       tab==='map');
+  document.getElementById('paneSubmitted').classList.toggle('active', tab==='submitted');
+  if (tab === 'submitted') loadMyRoutes();
+}
+
+
+function selectColor(el) {
+  document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedColor = el.dataset.color;
+
+  stopLines.forEach(l => l.setStyle({ color: selectedColor }));
+  stopMarkers.forEach(m => {
+    const num  = stopMarkers.indexOf(m) + 1;
+    m.setIcon(makeStopIcon(num, selectedColor));
+  });
+}
+
+
 function onMapClick(e) {
   const { lat, lng: lon } = e.latlng;
-  currentStops.push({ lat, lon });
-  updateStopCounter();
+  const num = currentStops.length + 1;
 
-  const num = currentStops.length;
-  const marker = L.marker([lat, lon], {
-    icon: L.divIcon({
-      html: `<div style="background:#38bdf8;color:#0f172a;width:26px;height:26px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:Sora,sans-serif;">${num}</div>`,
-      iconSize: [32, 32], className: ''
-    })
-  }).addTo(map);
+
+  currentStops.push({ lat, lon, name: '' });
+  updateStopCounter();
+  renderStopList();
+
+
+  const marker = L.marker([lat, lon], { icon: makeStopIcon(num, selectedColor) })
+    .addTo(map)
+    .on('click', (ev) => {
+      L.DomEvent.stopPropagation(ev);
+      openStopPopup(num - 1, marker);
+    });
   stopMarkers.push(marker);
+
 
   if (currentStops.length > 1) {
     const prev = currentStops[currentStops.length - 2];
-    const line = L.polyline([[prev.lat, prev.lon],[lat, lon]], { color:'#38bdf8', weight:4, opacity:0.8 }).addTo(map);
+    const line = L.polyline([[prev.lat, prev.lon],[lat, lon]], {
+      color: selectedColor, weight: 4, opacity: 0.8
+    }).addTo(map);
     stopLines.push(line);
   }
+}
+
+function makeStopIcon(num, color) {
+  return L.divIcon({
+    html: `<div style="
+      background:${color};color:#0f172a;
+      width:26px;height:26px;border-radius:50%;
+      border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.4);
+      display:flex;align-items:center;justify-content:center;
+      font-size:10px;font-weight:700;font-family:Sora,sans-serif;">${num}</div>`,
+    iconSize: [32, 32], iconAnchor: [16, 16], className: ''
+  });
+}
+
+
+function openStopPopup(idx, marker) {
+  const stop = currentStops[idx];
+  const popup = L.popup({ closeButton: true, maxWidth: 220 })
+    .setLatLng([stop.lat, stop.lon])
+    .setContent(`
+      <div class="popup-stop-name">Stop ${idx + 1}</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:6px">
+        ${stop.lat.toFixed(5)}, ${stop.lon.toFixed(5)}
+      </div>
+      <input class="popup-stop-input" id="popup-name-${idx}"
+        placeholder="Enter stop name…"
+        value="${escapeHtml(stop.name)}"
+        oninput="updateStopName(${idx}, this.value)">
+      <div style="display:flex;gap:6px">
+        <button onclick="removeStop(${idx})"
+          style="flex:1;background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);
+          border-radius:6px;padding:5px;font-size:11px;color:var(--red);cursor:pointer;
+          font-family:Sora,sans-serif">🗑 Remove</button>
+      </div>
+    `)
+    .openOn(map);
+
+  activePopup = popup;
+  setTimeout(() => {
+    const el = document.getElementById(`popup-name-${idx}`);
+    if (el) el.focus();
+  }, 100);
+}
+
+function updateStopName(idx, value) {
+  if (currentStops[idx]) {
+    currentStops[idx].name = value;
+    renderStopList();
+  }
+}
+
+
+function renderStopList() {
+  const wrap  = document.getElementById('stopListWrap');
+  const empty = document.getElementById('stopListEmpty');
+
+  if (!currentStops.length) {
+    if (empty) empty.style.display = 'block';
+
+    wrap.querySelectorAll('.stop-row').forEach(r => r.remove());
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+
+  wrap.querySelectorAll('.stop-row').forEach(r => r.remove());
+
+  currentStops.forEach((stop, i) => {
+    const row = document.createElement('div');
+    row.className = 'stop-row';
+    row.innerHTML = `
+      <div class="stop-num" style="background:${selectedColor}">${i + 1}</div>
+      <input
+        class="stop-name-input"
+        placeholder="Stop ${i + 1} name…"
+        value="${escapeHtml(stop.name)}"
+        data-idx="${i}"
+        title="Click to name this stop">
+      <span class="stop-coords">${stop.lat.toFixed(4)},${stop.lon.toFixed(4)}</span>
+      <button class="stop-del-btn" onclick="removeStop(${i})" title="Remove stop">✕</button>
+    `;
+
+
+    row.querySelector('.stop-name-input').addEventListener('input', function() {
+      currentStops[parseInt(this.dataset.idx)].name = this.value;
+    });
+
+
+    row.querySelector('.stop-coords').addEventListener('click', () => {
+      map.setView([stop.lat, stop.lon], 15);
+      openStopPopup(i, stopMarkers[i]);
+    });
+    row.querySelector('.stop-coords').style.cursor = 'pointer';
+
+    wrap.appendChild(row);
+  });
+}
+
+function removeStop(idx) {
+  map.closePopup();
+
+  if (stopMarkers[idx]) { map.removeLayer(stopMarkers[idx]); stopMarkers.splice(idx, 1); }
+  currentStops.splice(idx, 1);
+
+  stopLines.forEach(l => map.removeLayer(l));
+  stopLines = [];
+  for (let i = 1; i < currentStops.length; i++) {
+    const line = L.polyline(
+      [[currentStops[i-1].lat, currentStops[i-1].lon],[currentStops[i].lat, currentStops[i].lon]],
+      { color: selectedColor, weight: 4, opacity: 0.8 }
+    ).addTo(map);
+    stopLines.push(line);
+  }
+
+  stopMarkers.forEach((m, i) => m.setIcon(makeStopIcon(i + 1, selectedColor)));
+  updateStopCounter();
+  renderStopList();
 }
 
 function updateStopCounter() {
   const n = currentStops.length;
   document.getElementById('stopCounter').textContent =
-    n === 0 ? '0 stops added — click the map to begin' :
-    n === 1 ? '1 stop added' :
+    n === 0 ? '0 stops — click the map to begin' :
+    n === 1 ? '1 stop added — add at least one more' :
     `${n} stops added`;
 }
 
+
 async function submitRoute() {
+  const sb = await waitForSupabase();
   const name = document.getElementById('busName').value.trim();
   const freq = parseInt(document.getElementById('busFreq').value);
 
-  if (!name)            { showToast('Enter a route name', 'error'); return; }
-  if (!freq || freq<1)  { showToast('Enter a valid frequency', 'error'); return; }
-  if (currentStops.length < 2) { showToast('Add at least 2 stops', 'error'); return; }
+  if (!name)              { showToast('Enter a route name', 'error'); return; }
+  if (!freq || freq < 1)  { showToast('Enter a valid frequency (minutes)', 'error'); return; }
+  if (currentStops.length < 2) { showToast('Add at least 2 stops on the map', 'error'); return; }
+
+
+  const unnamed = currentStops.filter(s => !s.name.trim()).length;
+  if (unnamed > 0 && !confirm(`${unnamed} stop(s) have no name. Submit anyway?`)) return;
 
   const route = {
     name,
     frequency: freq,
-    stops: [...currentStops],
+    color: selectedColor,
+    stops: currentStops.map(s => ({ lat: s.lat, lon: s.lon, name: s.name.trim() })),
     status: 'pending',
     submittedBy: session.username,
     submittedAt: new Date().toISOString(),
   };
 
-  await dbAdd(db, STORE_PENDING, route);
+  const { data: pending, error } = await sb
+  .from('pending_routes')
+  .insert({
+    name:          name,
+    frequency_min: freq,
+    status:        'pending',
+    submitted_by:  session.userId
+  })
+  .select()
+  .single()
+
+if (error) { showToast('Submit failed', 'error'); return; }
+
+
+await sb.from('pending_stops').insert(
+  currentStops.map((s, i) => ({
+    pending_route_id: pending.id,
+    stop_order:       i,
+    stop_name:        s.name || `Stop ${i + 1}`,
+    lat:              s.lat,
+    lon:              s.lon
+  }))
+)
   showToast('Route submitted for approval ✓', 'success');
   clearStops();
   document.getElementById('busName').value = '';
   document.getElementById('busFreq').value = '';
-  await loadMyRoutes();
+  switchTab('submitted');
 }
 
+
+function clearStops() {
+  currentStops = [];
+  stopMarkers.forEach(m => map.removeLayer(m));
+  stopLines.forEach(l => map.removeLayer(l));
+  stopMarkers = [];
+  stopLines   = [];
+  map.closePopup();
+  updateStopCounter();
+  renderStopList();
+}
+
+
 async function loadMyRoutes() {
-  const all = await dbGetAll(db, STORE_PENDING);
-  const mine = all.filter(r => r.submittedBy === session.username || session.role === 'superadmin');
-  renderMyRoutes(mine);
+  const sb = await waitForSupabase();
+  let query = sb
+  .from('pending_routes')
+  .select('*, pending_stops(*)')
+  .order('submitted_at', { ascending: false })
+
+if (session.role !== 'superadmin') {
+  query = query.eq('submitted_by', session.userId)
+}
+const { data: mine } = await query
+
+
+const routes = (mine || []).map(r => ({
+  ...r,
+  frequency: r.frequency_min,
+  stops: (r.pending_stops || [])
+    .sort((a, b) => a.stop_order - b.stop_order)
+    .map(s => ({ lat: s.lat, lon: s.lon, name: s.stop_name }))
+}))
+renderMyRoutes(routes)
 }
 
 function renderMyRoutes(routes) {
@@ -425,58 +647,83 @@ function renderMyRoutes(routes) {
     return;
   }
   c.innerHTML = routes
-    .sort((a,b) => new Date(b.submittedAt)-new Date(a.submittedAt))
-    .map(r => `
-      <div class="route-item">
-        <div class="route-item-header">
-          <div>
-            <div class="route-item-name">${escapeHtml(r.name)}</div>
-            <div class="route-item-meta">${r.stops.length} stops · every ${r.frequency} min</div>
-            <div class="route-item-meta">${new Date(r.submittedAt).toLocaleDateString()}</div>
+    .sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))
+    .map(r => {
+      const color = r.color || '#38bdf8';
+      const namedStops = (r.stops || []).filter(s => s.name).length;
+      return `
+        <div class="route-item">
+          <div class="route-item-header">
+            <div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="width:10px;height:10px;border-radius:50%;background:${escapeHtml(color)};flex-shrink:0"></div>
+                <div class="route-item-name">${escapeHtml(r.name)}</div>
+              </div>
+              <div class="route-item-meta">${r.stops.length} stops · every ${r.frequency} min</div>
+              <div class="route-item-meta">${namedStops}/${r.stops.length} stops named · ${new Date(r.submittedAt).toLocaleDateString()}</div>
+            </div>
+            <span class="status-pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
           </div>
-          <span class="status-pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
-        </div>
-        <div class="route-item-actions">
-          <button class="btn btn-secondary btn-sm" onclick="previewRoute(${r.id})">Preview</button>
-          ${r.status==='pending' ? `<button class="btn btn-danger btn-sm" onclick="withdrawRoute(${r.id})">Withdraw</button>` : ''}
-        </div>
-      </div>`).join('');
+
+          
+          <div class="route-stops-expand" id="stops-${r.id}">
+            ${(r.stops||[]).map((s, i) => `
+              <div class="rse-stop">
+                <div class="rse-num" style="background:${color}22;color:${escapeHtml(color)};border:1px solid ${escapeHtml(color)}44">${i+1}</div>
+                <div class="rse-name">${s.name ? escapeHtml(s.name) : '<em style="color:var(--muted)">Unnamed stop</em>'}</div>
+                <div class="rse-coords">${s.lat.toFixed(4)},${s.lon.toFixed(4)}</div>
+              </div>`).join('')}
+          </div>
+
+          <div class="route-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="toggleStopList(${r.id})">📋 Stops</button>
+            <button class="btn btn-secondary btn-sm" onclick="previewRoute(${r.id})">👁 Preview</button>
+            ${r.status==='pending' ? `<button class="btn btn-danger btn-sm" onclick="withdrawRoute(${r.id})">Withdraw</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function toggleStopList(id) {
+  const el = document.getElementById(`stops-${id}`);
+  if (el) el.classList.toggle('show');
 }
 
 function previewRoute(id) {
   dbGetAll(db, STORE_PENDING).then(all => {
     const r = all.find(x => x.id === id);
-    if (!r) return;
-    if (r.stops.length < 2) return;
+    if (!r || r.stops.length < 2) return;
+    const color = r.color || '#818cf8';
     const coords = r.stops.map(s => [s.lat, s.lon]);
-    const line = L.polyline(coords, { color:'#818cf8', weight:5, opacity:0.85 }).addTo(map);
+    const line = L.polyline(coords, { color, weight: 5, opacity: 0.9 }).addTo(map);
+    r.stops.forEach((s, i) => {
+      L.circleMarker([s.lat, s.lon], {
+        radius: i===0||i===r.stops.length-1 ? 9 : 6,
+        fillColor: i===0 ? '#34d399' : i===r.stops.length-1 ? '#f87171' : color,
+        color:'#fff', weight:2, fillOpacity:1
+      }).addTo(map).bindPopup(`<strong>${escapeHtml(s.name||`Stop ${i+1}`)}</strong><br>${s.lat.toFixed(5)}, ${s.lon.toFixed(5)}`);
+    });
     map.fitBounds(line.getBounds(), { padding:[40,40] });
-    setTimeout(() => map.removeLayer(line), 5000);
+    setTimeout(() => map.removeLayer(line), 6000);
   });
 }
 
 async function withdrawRoute(id) {
   if (!confirm('Withdraw this route submission?')) return;
-  await dbDelete(db, STORE_PENDING, id);
-  showToast('Route withdrawn');
-  await loadMyRoutes();
+  await sb.from('pending_routes').delete().eq('id', id)
+showToast('Route withdrawn')
+await loadMyRoutes()
 }
 
-function clearStops() {
-  currentStops = [];
-  stopMarkers.forEach(m => map.removeLayer(m));
-  stopLines.forEach(l => map.removeLayer(l));
-  stopMarkers = []; stopLines = [];
-  updateStopCounter();
-}
 
 async function exportJSON() {
-  const routes = await dbGetAll(db, STORE_PENDING);
-  const mine = routes.filter(r => r.submittedBy === session.username);
-  const blob = new Blob([JSON.stringify(mine, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `ktm_my_routes_${Date.now()}.json`;
+  let query = sb.from('pending_routes').select('*, pending_stops(*)');
+  if (session.role !== 'superadmin') query = query.eq('submitted_by', session.userId);
+  const { data: mine = [] } = await query;
+  const blob   = new Blob([JSON.stringify(mine, null, 2)], { type: 'application/json' });
+  const a      = document.createElement('a');
+  a.href       = URL.createObjectURL(blob);
+  a.download   = `ktm_routes_${Date.now()}.json`;
   a.click();
 }
 

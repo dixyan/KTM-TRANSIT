@@ -28,7 +28,7 @@
       flex-shrink: 0;
       border-bottom: 1px solid var(--border);
       background: var(--surface);
-      /* prevent any child from causing overflow */
+      
       overflow: hidden;
       width: 100%;
       box-sizing: border-box;
@@ -260,7 +260,7 @@
     .topnav-back { display: none; }
     @media (max-width: 768px) {
       .topnav-back { display: flex; }
-      /* hide role badge on mobile — saves space */
+      
       #navRoleBadge { display: none; }
     }
 
@@ -334,9 +334,21 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="../js/db.js"></script>
 <script src="../js/pwa.js"></script>
+<script type="module">
+  import { supabase } from '../js/supabase.js';
+  window.sb = supabase;
+  window.dispatchEvent(new Event('supabase-ready'));
+</script>
 <script>
 let map, db, session;
 let previewLayers = [];
+
+function waitForSupabase() {
+  return new Promise(resolve => {
+    if (window.sb) { resolve(window.sb); return; }
+    window.addEventListener('supabase-ready', () => resolve(window.sb), { once: true });
+  });
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   session = requireRole(['superadmin'], 'login.html?next=superadmin.html');
@@ -359,6 +371,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  await waitForSupabase();
   await refreshAll();
 });
 
@@ -371,9 +384,16 @@ function switchTab(tab) {
 }
 
 async function refreshAll() {
-  const pending  = await dbGetAll(db, STORE_PENDING);
-  const approved = await dbGetAll(db, STORE_ROUTES);
-  const users    = await dbGetAll(db, STORE_USERS);
+  const sb = await waitForSupabase();
+  const [pendingRes, approvedRes, usersRes] = await Promise.all([
+    sb.from('pending_routes').select('*, pending_stops(*)').order('submitted_at', { ascending: false }),
+    sb.from('bus_routes').select('*, route_stops(*)'),
+    sb.from('users').select('id, username, name, role')
+  ]);
+
+const pending  = (pendingRes.data  || []).map(r => ({ ...r, frequency: r.frequency_min, stops: (r.pending_stops||[]).sort((a,b)=>a.stop_order-b.stop_order).map(s=>({lat:s.lat,lon:s.lon,name:s.stop_name})) }))
+const approved = (approvedRes.data || []).map(r => ({ ...r, frequency: r.frequency_min, stops: (r.route_stops||[]).sort((a,b)=>a.stop_order-b.stop_order).map(s=>({lat:s.lat,lon:s.lon,name:s.stop_name})) }))
+const users    = usersRes.data || []
   const admins   = users.filter(u => u.role==='admin'||u.role==='pending_admin');
 
   document.getElementById('statPending').textContent  = pending.filter(r=>r.status==='pending').length;
@@ -401,18 +421,18 @@ function renderRoutes(routes) {
           <div class="rc-name">${escapeHtml(r.name)}</div>
           <div class="rc-meta">
             ${r.stops.length} stops · every ${r.frequency} min<br>
-            By: <strong>${escapeHtml(r.submittedBy)}</strong> · ${new Date(r.submittedAt).toLocaleDateString()}
+            By: <strong>${escapeHtml(r.submitted_by_name || r.submitted_by || '—')}</strong> · ${r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : '—'}
           </div>
         </div>
         <span class="status-pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>
       </div>
       <div class="rc-actions">
-        <button class="btn btn-secondary btn-sm" onclick="previewOnMap(${r.id})">👁 Preview</button>
+        <button class="btn btn-secondary btn-sm" onclick="previewOnMap('${r.id}')">👁 Preview</button>
         ${r.status==='pending' ? `
-          <button class="btn btn-success btn-sm" onclick="approveRoute(${r.id})">✓ Approve</button>
-          <button class="btn btn-danger btn-sm"  onclick="rejectRoute(${r.id})">✕ Reject</button>
+          <button class="btn btn-success btn-sm" onclick="approveRoute('${r.id}')">✓ Approve</button>
+          <button class="btn btn-danger btn-sm"  onclick="rejectRoute('${r.id}')">✕ Reject</button>
         ` : `
-          <button class="btn btn-danger btn-sm" onclick="removeRoute(${r.id})">🗑 Remove</button>
+          <button class="btn btn-danger btn-sm" onclick="removeRoute('${r.id}')">🗑 Remove</button>
         `}
       </div>
     </div>`).join('');
@@ -450,15 +470,21 @@ function renderUsers(users) {
 async function previewOnMap(id) {
   previewLayers.forEach(l => map.removeLayer(l));
   previewLayers = [];
-  const all = await dbGetAll(db, STORE_PENDING);
-  const r   = all.find(x => x.id === id);
-  if (!r || r.stops.length < 2) return;
+  const sb = await waitForSupabase();
+  const { data: r } = await sb
+    .from('pending_routes')
+    .select('*, pending_stops(*)')
+    .eq('id', id)
+    .single();
+  if (!r) return;
+  const stops = (r.pending_stops || []).sort((a,b) => a.stop_order - b.stop_order);
+  if (stops.length < 2) return;
 
-  const line = L.polyline(r.stops.map(s=>[s.lat,s.lon]), { color:'#818cf8', weight:5, opacity:0.9 }).addTo(map);
-  r.stops.forEach((s, i) => {
+  const line = L.polyline(stops.map(s=>[s.lat,s.lon]), { color:'#818cf8', weight:5, opacity:0.9 }).addTo(map);
+  stops.forEach((s, i) => {
     const m = L.circleMarker([s.lat,s.lon], {
-      radius: i===0||i===r.stops.length-1 ? 9 : 6,
-      fillColor: i===0 ? '#34d399' : i===r.stops.length-1 ? '#f87171' : '#818cf8',
+      radius: i===0||i===stops.length-1 ? 9 : 6,
+      fillColor: i===0 ? '#34d399' : i===stops.length-1 ? '#f87171' : '#818cf8',
       color:'#fff', weight:2, fillOpacity:1
     }).addTo(map);
     previewLayers.push(m);
@@ -469,16 +495,53 @@ async function previewOnMap(id) {
 
 async function approveRoute(id) {
   if (!confirm('Approve this route? It will go live for all users.')) return;
-  const all = await dbGetAll(db, STORE_PENDING);
-  const r   = all.find(x => x.id === id);
-  if (!r) return;
+  const sb = await waitForSupabase();
 
-  r.status = 'approved';
-  r.approvedAt = new Date().toISOString();
-  r.approvedBy = session.username;
-  const { id: pendingId, ...routeData } = r;
-  await dbAdd(db, STORE_ROUTES, { ...routeData, pendingId });
-  await dbPut(db, STORE_PENDING, { ...r, status: 'approved' });
+
+  const { data: r, error: fetchErr } = await sb
+    .from('pending_routes')
+    .select('*, pending_stops(*)')
+    .eq('id', id)
+    .single();
+  if (fetchErr || !r) { showToast('Route not found: ' + (fetchErr?.message || ''), 'error'); return; }
+
+
+  const { error: updateErr } = await sb.from('pending_routes').update({
+    status:      'approved',
+    reviewed_by: session?.userId || null,
+    reviewed_at: new Date().toISOString()
+  }).eq('id', id);
+  if (updateErr) { showToast('Update failed: ' + updateErr.message, 'error'); return; }
+
+
+  const { data: newRoute, error: insertErr } = await sb
+    .from('bus_routes')
+    .insert({
+      name:          r.name,
+      frequency_min: r.frequency_min,
+      status:        'approved',
+      submitted_by:  r.submitted_by  || null,
+      approved_by:   session?.userId || null,
+      approved_at:   new Date().toISOString()
+    })
+    .select()
+    .single();
+  if (insertErr || !newRoute) { showToast('Failed to publish route: ' + (insertErr?.message || ''), 'error'); return; }
+
+
+  const stops = r.pending_stops || [];
+  if (stops.length) {
+    const { error: stopsErr } = await sb.from('route_stops').insert(
+      stops.map(s => ({
+        route_id:   newRoute.id,
+        stop_order: s.stop_order,
+        stop_name:  s.stop_name,
+        lat:        s.lat,
+        lon:        s.lon
+      }))
+    );
+    if (stopsErr) { showToast('Stops insert failed: ' + stopsErr.message, 'error'); return; }
+  }
 
   showToast('Route approved and published ✓', 'success');
   await refreshAll();
@@ -486,44 +549,47 @@ async function approveRoute(id) {
 
 async function rejectRoute(id) {
   const reason = prompt('Reason for rejection (optional):');
-  const all = await dbGetAll(db, STORE_PENDING);
-  const r   = all.find(x => x.id === id);
-  if (!r) return;
-  await dbPut(db, STORE_PENDING, { ...r, status: 'rejected', rejectionReason: reason || '', rejectedAt: new Date().toISOString() });
+  const sb = await waitForSupabase();
+  const { error } = await sb.from('pending_routes').update({
+    status:           'rejected',
+    rejection_reason: reason || '',
+    reviewed_by:      session?.userId || null,
+    reviewed_at:      new Date().toISOString()
+  }).eq('id', id);
+  if (error) { showToast('Reject failed: ' + error.message, 'error'); return; }
   showToast('Route rejected');
   await refreshAll();
 }
 
 async function removeRoute(id) {
   if (!confirm('Remove this route record?')) return;
-  await dbDelete(db, STORE_PENDING, id);
-  showToast('Record removed');
-  await refreshAll();
+  const sb = await waitForSupabase();
+  await sb.from('pending_routes').delete().eq('id', id);
+
+showToast('Record removed')
+await refreshAll()
 }
 
 async function approveAdmin(username) {
-  const user = await dbGet(db, STORE_USERS, username);
-  if (!user) return;
-  await dbPut(db, STORE_USERS, { ...user, role: 'admin' });
-  showToast(`${user.name || username} is now an Admin ✓`, 'success');
-  await refreshAll();
+  const sb = await waitForSupabase();
+  await sb.from('users').update({ role: 'admin' }).eq('username', username)
+showToast(`${username} is now an Admin ✓`, 'success')
+await refreshAll()
 }
 
 async function revokeAdmin(username) {
   if (!confirm(`Revoke admin access for ${username}?`)) return;
-  const user = await dbGet(db, STORE_USERS, username);
-  if (!user) return;
-  await dbPut(db, STORE_USERS, { ...user, role: 'user' });
+  const sb = await waitForSupabase();
+  await sb.from('users').update({ role: 'user' }).eq('username', username)
   showToast('Admin access revoked');
   await refreshAll();
 }
 
 async function promoteAdmin(username) {
   if (!confirm(`Grant admin access to ${username}?`)) return;
-  const user = await dbGet(db, STORE_USERS, username);
-  if (!user) return;
-  await dbPut(db, STORE_USERS, { ...user, role: 'admin' });
-  showToast(`${user.name || username} promoted to Admin ✓`, 'success');
+  const sb = await waitForSupabase();
+  await sb.from('users').update({ role: 'admin' }).eq('username', username)
+  showToast(`${username} promoted to Admin ✓`, 'success');
   await refreshAll();
 }
 

@@ -1,4 +1,4 @@
-const APP_VERSION   = 'v1.0.1';  // bump version to bust old caches
+const APP_VERSION   = 'v1.0.2';
 const SHELL_CACHE   = `ktm-shell-${APP_VERSION}`;
 const TILE_CACHE    = `ktm-tiles-${APP_VERSION}`;
 const API_CACHE     = `ktm-api-${APP_VERSION}`;
@@ -16,11 +16,13 @@ const SHELL_ASSETS = [
   '/KTM-TRANSIT/css/theme.css',
   '/KTM-TRANSIT/js/db.js',
   '/KTM-TRANSIT/js/pwa.js',
+  '/KTM-TRANSIT/js/supabase.js',
   '/KTM-TRANSIT/manifest.json',
   '/KTM-TRANSIT/assets/icons/icon-192.png',
   '/KTM-TRANSIT/assets/icons/icon-512.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+  'https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap',
 ];
 
 self.addEventListener('install', event => {
@@ -85,7 +87,6 @@ self.addEventListener('fetch', event => {
   }
 });
 
-
 async function cacheFirst(request, cacheName) {
   const cached = await caches.match(request);
   if (cached) return cached;
@@ -146,7 +147,7 @@ async function trimCache(cache, maxEntries) {
 function offlineFallback(request) {
   const url = new URL(request.url);
   if (request.headers.get('Accept')?.includes('text/html')) {
-    return caches.match('/KTM-TRANSIT/index.html');  // FIX #2 continued
+    return caches.match('/KTM-TRANSIT/index.html');
   }
   return new Response(
     JSON.stringify({ error: 'You are offline', url: url.href }),

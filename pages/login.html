@@ -241,13 +241,16 @@
 
 <script src="../js/db.js"></script>
 <script src="../js/pwa.js"></script>
+<script type="module">
+  import { supabase } from '../js/supabase.js';
+  window.sb = supabase;
+
+  window.dispatchEvent(new Event('supabase-ready'));
+</script>
 <script>
-let db, selectedSignUpRole = 'user';
+let selectedSignUpRole = 'user';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  db = await openDB();
-  await seedUsers(db);
-
   const session = getSession();
   if (session) {
     const params = new URLSearchParams(window.location.search);
@@ -281,12 +284,22 @@ async function doSignIn() {
     showErr(errEl, 'Please fill in all fields'); return;
   }
 
-  const user = await dbGet(db, STORE_USERS, username);
-  if (!user || user.password !== password) {
-    showErr(errEl, 'Invalid username or password'); return;
-  }
 
-  setSession({ username: user.username, name: user.name, role: user.role });
+  const sb = await waitForSupabase();
+
+
+  const { data: user, error } = await sb
+    .from('users')
+    .select('*')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (error || !user) { showErr(errEl, 'Invalid username or password'); return; }
+
+
+  if (user.password_hash !== password) { showErr(errEl, 'Invalid username or password'); return; }
+
+  setSession({ username: user.username, name: user.name, role: user.role, userId: user.id });
   showToast('Welcome back, ' + (user.name || user.username) + '!', 'success');
 
   setTimeout(() => {
@@ -309,20 +322,40 @@ async function doSignUp() {
   if (password.length < 6)             { showErr(errEl, 'Password must be at least 6 characters'); return; }
   if (!/^[a-zA-Z0-9_]+$/.test(username)) { showErr(errEl, 'Username: letters, numbers and _ only'); return; }
 
-  const existing = await dbGet(db, STORE_USERS, username);
+  const sb = await waitForSupabase();
+
+  const { data: existing } = await sb
+    .from('users')
+    .select('id')
+    .eq('username', username)
+    .maybeSingle()
+
   if (existing) { showErr(errEl, 'Username already taken'); return; }
 
   const role = selectedSignUpRole === 'admin' ? 'pending_admin' : 'user';
-  await dbPut(db, STORE_USERS, { username, password, name, role });
+  const { data: newUser, error } = await sb
+  .from('users')
+  .insert({ username, name, password_hash: password, role })
+  .select()
+  .single()
 
-  if (role === 'pending_admin') {
-    showToast('Account created! Awaiting Super Admin approval.', 'warn');
-    setTimeout(() => switchTab('signin'), 1500);
-  } else {
-    setSession({ username, name, role });
-    showToast('Account created! Welcome!', 'success');
-    setTimeout(() => window.location.href = '../index.html', 800);
-  }
+if (error) { showErr(errEl, 'Could not create account'); return; }
+
+if (role === 'pending_admin') {
+  showToast('Account created! Awaiting Super Admin approval.', 'warn')
+  setTimeout(() => switchTab('signin'), 1500)
+} else {
+  setSession({ username: newUser.username, name: newUser.name, role: newUser.role, userId: newUser.id })
+  showToast('Account created! Welcome!', 'success')
+  setTimeout(() => window.location.href = '../index.html', 800)
+}
+}
+
+function waitForSupabase() {
+  return new Promise(resolve => {
+    if (window.sb) { resolve(window.sb); return; }
+    window.addEventListener('supabase-ready', () => resolve(window.sb), { once: true });
+  });
 }
 
 function showErr(el, msg) {
